@@ -1,0 +1,7 @@
+Your verification code is: 
+
+{{ code }}
+
+Unesi ovaj kod na stranici za verifikaciju da aktiviraš svoj nalog.
+
+Ovaj kod važi 15 minuta.

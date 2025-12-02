@@ -1,0 +1,101 @@
+"""
+URL configuration for gen_hub_be project.
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/5.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.http import JsonResponse
+from django.urls import include, path
+
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework_simplejwt.views import TokenVerifyView
+
+from dj_rest_auth.views import (
+    LogoutView,
+    PasswordChangeView,
+    PasswordResetConfirmView,
+    PasswordResetView,
+)
+from dj_rest_auth.registration.views import RegisterView
+
+from users.views import (
+    ResendEmailVerificationView,
+    CustomLoginView,
+    CustomUserDetailsView,
+    CookieTokenRefreshView,
+)
+from users.verify_email import VerifyEmailCodeView
+
+def root_view(request):
+    """Root API endpoint"""
+    return JsonResponse({
+        'message': 'Gen Hub Backend API',
+        'version': '1.0',
+        'endpoints': {
+            'users': '/api/users/',
+            'admin': '/admin/',
+        },
+        'documentation': {
+            'users_api': '/api/users/ - Lists all user endpoints',
+            'register': 'POST /api/users/register/ - Register a new user',
+            'login': 'POST /api/users/login/ - Login and get JWT tokens',
+            'profile': 'GET /api/users/me/ - Get authenticated user profile',
+        }
+    })
+
+api_paths = [
+    path('users/', include('users.urls')),
+    path('', include('tasks.urls')),
+    path('', include('availability.urls')),
+    path('', include('applications.urls')),
+    path('', include('reviews.urls')),
+    path('', include('notifications.urls')),
+    path('', include('categories.urls')),
+]
+
+auth_patterns = [
+    path('login/', CustomLoginView.as_view(), name='rest_login'),
+    path('logout/', LogoutView.as_view(), name='rest_logout'),
+    path('registration/', RegisterView.as_view(), name='rest_register'),
+    path(
+        'registration/resend-email/',
+        ResendEmailVerificationView.as_view(),
+        name='rest_resend_email',
+    ),
+    path(
+        'registration/verify-email/',
+        VerifyEmailCodeView.as_view(),
+        name='account_email_verification_sent'
+    ),
+    path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
+    path(
+        'password/reset/confirm/<uidb64>/<token>/',
+        PasswordResetConfirmView.as_view(),
+        name='password_reset_confirm',
+    ),
+    path('password/change/', PasswordChangeView.as_view(), name='rest_password_change'),
+    path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
+    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('user/', CustomUserDetailsView.as_view(), name='rest_user_details'),
+]
+
+urlpatterns = [
+    path('', root_view, name='root'),
+    path('admin/', admin.site.urls),
+    path('api/', include((api_paths, 'api'), namespace='api')),
+    path('auth/', include(auth_patterns)),
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+]

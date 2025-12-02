@@ -1,0 +1,7 @@
+Your verification code is: 
+
+{{ code }}
+
+Enter this code on the verification page to confirm your email address.
+
+This code is valid for 15 minutes.
