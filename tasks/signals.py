@@ -12,7 +12,6 @@ def task_deadline_notification(sender, instance: Task, **kwargs):
     if not instance.volunteer:
         return
     
-    # Only process if start time was actually updated
     update_fields = kwargs.get('update_fields')
     if update_fields and 'start' not in update_fields:
         return
@@ -24,12 +23,13 @@ def task_deadline_notification(sender, instance: Task, **kwargs):
 
     for user, role in ((instance.volunteer, "assigned"), (instance.user, "owner")):
         if Notification.objects.filter(
-            user=user, type="task_deadline", message__icontains=str(instance.id)
+            user=user, type="task_deadline", related_task_id=instance.id
         ).exists():
             continue
         create_notification(
             user=user,
             type="task_deadline",
             title="Task approaching deadline",
-            message=f"Task {instance.id} ('{instance.title}') is starting soon for {role}.",
+            message=f"Task '{instance.title}' is starting soon for {role}.",
+            related_task_id=instance.id,
         )

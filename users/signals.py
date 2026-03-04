@@ -21,5 +21,3 @@ def create_email_verification_attempt(
         return
 
     EmailVerificationAttempt.objects.get_or_create(email_confirmation=instance)
-
-

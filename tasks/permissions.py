@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-from gen_hub_be.permissions import IsSenior, IsVolunteer, IsAdminUser, is_admin
+from gen_hub_be.permissions import IsParent, IsVolunteer, IsAdminUser, is_admin
 
 
 class IsTaskOwner(BasePermission):
@@ -10,4 +10,4 @@ class IsTaskOwner(BasePermission):
         return obj.user == request.user
 
 
-__all__ = ["IsSenior", "IsVolunteer", "IsAdminUser", "IsTaskOwner", "is_admin"]
+__all__ = ["IsParent", "IsVolunteer", "IsAdminUser", "IsTaskOwner", "is_admin"]

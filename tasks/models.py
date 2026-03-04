@@ -11,9 +11,13 @@ from gen_hub_be.db.fields import FlexibleJSONField
 class Task(models.Model):
     UNCLAIMED = "unclaimed"
     CLAIMED = "claimed"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
     STATUS_CHOICES = [
         (UNCLAIMED, "Unclaimed"),
         (CLAIMED, "Claimed"),
+        (COMPLETED, "Completed"),
+        (CANCELLED, "Cancelled"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -31,12 +35,14 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     start = models.DateTimeField()
-    end = models.DateTimeField()
+    end = models.DateTimeField(blank=True, null=True)
     whole_day = models.BooleanField(default=False)
-    color = models.CharField(max_length=32, default="#0099ff")
-    location = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True, help_text="Raw address entered by user")
+    formatted_address = models.CharField(max_length=500, blank=True, null=True, help_text="Formatted address from geocoding")
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=UNCLAIMED)
-    duration = models.PositiveIntegerField(help_text="Duration in minutes")
+    duration = models.PositiveIntegerField(help_text="Duration in minutes", blank=True, null=True)
     extra_dates = FlexibleJSONField(blank=True, null=True, default=dict)
     created_at = models.DateTimeField(default=timezone.now, editable=False)
     updated_at = models.DateTimeField(auto_now=True)

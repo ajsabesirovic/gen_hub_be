@@ -7,8 +7,8 @@ class IsApplicationOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         if is_admin(request.user):
             return True
-        if request.user.role == "senior":
+        if request.user.role == "parent":
             return obj.task.user == request.user
-        if request.user.role == "volunteer":
+        if request.user.role == "babysitter":
             return obj.volunteer == request.user
         return False

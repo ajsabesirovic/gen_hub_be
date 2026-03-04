@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'reviews',
     'notifications',
     'categories',
+    'stats',
 ]
 
 SITE_ID = 1
@@ -91,14 +92,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gen_hub_be.wsgi.application'
 
 
-
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 if DATABASE_URL:
-    if DATABASE_URL.startswith("sqlite:///"):
-        db_path = DATABASE_URL.replace("sqlite:///", "")
-        if not os.path.isabs(db_path):
-            db_path = str(BASE_DIR / db_path)
-            DATABASE_URL = f"sqlite:///{db_path}"
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL)
     }
@@ -117,9 +112,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -130,6 +122,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = 'staticfiles/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -168,7 +163,6 @@ REST_AUTH = {
     'REGISTER_SERIALIZER': 'accounts.serializers.CustomRegisterSerializer',
     'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
 }
-#hello
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
@@ -177,9 +171,8 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or os.getenv("DEFAULT_FROM_EMAIL", "")
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_USERNAME_REQUIRED = True
 
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_MAX_ATTEMPTS = 3
@@ -232,3 +225,5 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")

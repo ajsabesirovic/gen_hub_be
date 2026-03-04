@@ -11,10 +11,12 @@ class Application(models.Model):
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
+    CANCELLED = "cancelled"
     STATUS_CHOICES = [
         (PENDING, "Pending"),
         (ACCEPTED, "Accepted"),
         (REJECTED, "Rejected"),
+        (CANCELLED, "Cancelled"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -31,3 +33,36 @@ class Application(models.Model):
 
     def __str__(self) -> str:
         return f"{self.volunteer} -> {self.task}"
+
+
+class Invitation(models.Model):
+    """
+    Represents an invitation sent by a parent to a babysitter for a specific task.
+    """
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+    EXPIRED = "expired"
+    STATUS_CHOICES = [
+        (PENDING, "Pending"),
+        (ACCEPTED, "Accepted"),
+        (DECLINED, "Declined"),
+        (EXPIRED, "Expired"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    task = models.ForeignKey(Task, related_name="invitations", on_delete=models.CASCADE)
+    babysitter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="task_invitations", on_delete=models.CASCADE
+    )
+    message = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=PENDING)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    responded_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ("task", "babysitter")
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Invitation: {self.task.user} -> {self.babysitter} for {self.task}"

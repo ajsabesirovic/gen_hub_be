@@ -54,4 +54,3 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         return user
     
-

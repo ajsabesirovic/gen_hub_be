@@ -12,5 +12,5 @@ def review_created(sender, instance: Review, created: bool, **kwargs):
             user=instance.volunteer,
             type="review_received",
             title="New review received",
-            message=f"You received a {instance.rating}-star review from {instance.senior}.",
+            message=f"You received a {instance.rating}-star review from {instance.parent}.",
         )

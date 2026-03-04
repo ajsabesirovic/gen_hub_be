@@ -31,3 +31,70 @@ class UserAvailabilitySerializer(serializers.ModelSerializer):
         if start and end and start >= end:
             raise serializers.ValidationError("End time must be after start time.")
         return attrs
+
+
+class TimeRangeSerializer(serializers.Serializer):
+    """Serializer for individual time ranges within a day."""
+    id = serializers.CharField(required=False, allow_blank=True)
+    from_time = serializers.CharField(source='from', required=False, allow_blank=True)
+    to_time = serializers.CharField(source='to', required=False, allow_blank=True)
+
+    def to_representation(self, instance):
+        """Convert internal representation to frontend format."""
+        return {
+            'id': instance.get('id', ''),
+            'from': instance.get('from', ''),
+            'to': instance.get('to', ''),
+        }
+
+    def to_internal_value(self, data):
+        """Convert frontend format to internal representation."""
+        return {
+            'id': data.get('id', ''),
+            'from': data.get('from', ''),
+            'to': data.get('to', ''),
+        }
+
+
+class WeeklyScheduleSerializer(serializers.Serializer):
+    """Serializer for weekly schedule entries."""
+    day = serializers.CharField()
+    timeRanges = TimeRangeSerializer(many=True, required=False, default=list)
+    whole_day = serializers.BooleanField(required=False, default=False)
+
+
+class MonthlyScheduleSerializer(serializers.Serializer):
+    """Serializer for monthly schedule entries."""
+    date = serializers.CharField()
+    from_time = serializers.CharField(source='from', required=False, allow_blank=True)
+    to_time = serializers.CharField(source='to', required=False, allow_blank=True)
+    whole_day = serializers.BooleanField(required=False, default=False)
+
+    def to_representation(self, instance):
+        """Convert internal representation to frontend format."""
+        return {
+            'date': instance.get('date', ''),
+            'from': instance.get('from', ''),
+            'to': instance.get('to', ''),
+            'whole_day': instance.get('whole_day', False),
+        }
+
+    def to_internal_value(self, data):
+        """Convert frontend format to internal representation."""
+        return {
+            'date': data.get('date', ''),
+            'from': data.get('from', ''),
+            'to': data.get('to', ''),
+            'whole_day': data.get('whole_day', False),
+        }
+
+
+class AggregatedAvailabilitySerializer(serializers.Serializer):
+    """
+    Serializer for aggregated availability data.
+    Matches the frontend AvailabilityData interface.
+    """
+    mode = serializers.ChoiceField(choices=['weekly', 'monthly'])
+    weeklySchedule = WeeklyScheduleSerializer(many=True, required=False, default=list)
+    monthlySchedule = MonthlyScheduleSerializer(many=True, required=False, default=list)
+    currentMonth = serializers.CharField(required=False, allow_blank=True)

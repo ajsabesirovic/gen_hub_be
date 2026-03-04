@@ -9,4 +9,4 @@ class IsReviewOwnerOrReadOnly(BasePermission):
             return True
         if is_admin(request.user):
             return True
-        return obj.senior == request.user
+        return obj.parent == request.user

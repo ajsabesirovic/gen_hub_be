@@ -57,8 +57,8 @@ class Command(BaseCommand):
                 "test_volunteer1",
                 "test_volunteer2",
                 "test_volunteer3",
-                "test_senior1",
-                "test_senior2",
+                "test_parent1",
+                "test_parent2",
             ]
         )
         deleted_counts["test_users"] = test_users.count()
@@ -73,20 +73,20 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Starting database seeding...\n"))
 
         categories = self.create_categories()
-        volunteers, seniors = self.create_test_users()
-        tasks = self.create_tasks(volunteers, seniors, categories)
+        volunteers, parents = self.create_test_users()
+        tasks = self.create_tasks(volunteers, parents, categories)
         applications = self.create_applications(tasks, volunteers)
-        availabilities = self.create_availabilities(volunteers + seniors)
-        reviews = self.create_reviews(tasks, seniors, volunteers)
-        notifications = self.create_notifications(volunteers + seniors)
+        availabilities = self.create_availabilities(volunteers + parents)
+        reviews = self.create_reviews(tasks, parents, volunteers)
+        notifications = self.create_notifications(volunteers + parents)
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 50))
         self.stdout.write(self.style.SUCCESS("✓ Database seeding completed!"))
         self.stdout.write(self.style.SUCCESS("=" * 50))
         self.stdout.write(f"\nCreated:")
         self.stdout.write(f"  - Categories: {len(categories)}")
-        self.stdout.write(f"  - Test Users: {len(volunteers) + len(seniors)}")
+        self.stdout.write(f"  - Test Users: {len(volunteers) + len(parents)}")
         self.stdout.write(f"    • Volunteers: {len(volunteers)}")
-        self.stdout.write(f"    • Seniors: {len(seniors)}")
+        self.stdout.write(f"    • Parents: {len(parents)}")
         self.stdout.write(f"  - Tasks: {len(tasks)}")
         self.stdout.write(f"  - Applications: {len(applications)}")
         self.stdout.write(f"  - Availabilities: {len(availabilities)}")
@@ -152,7 +152,7 @@ class Command(BaseCommand):
         return categories
 
     def create_test_users(self):
-        """Create test users (volunteers and seniors)."""
+        """Create test users (volunteers and parents)."""
         self.stdout.write("\nCreating test users...")
 
         volunteers_data = [
@@ -191,28 +191,28 @@ class Command(BaseCommand):
             },
         ]
 
-        seniors_data = [
+        parents_data = [
             {
-                "username": "test_senior1",
-                "email": "senior1@example.com",
+                "username": "test_parent1",
+                "email": "parent1@example.com",
                 "name": "Robert Anderson",
                 "age": "72",
                 "phone": "+1-555-0201",
                 "city": "New York",
                 "country": "USA",
                 "skills": "Retired teacher, needs help with technology",
-                "role": "senior",
+                "role": "parent",
             },
             {
-                "username": "test_senior2",
-                "email": "senior2@example.com",
+                "username": "test_parent2",
+                "email": "parent2@example.com",
                 "name": "Margaret Thompson",
                 "age": "68",
                 "phone": "+1-555-0202",
                 "city": "Los Angeles",
                 "country": "USA",
                 "skills": "Retired nurse, needs transportation assistance",
-                "role": "senior",
+                "role": "parent",
             },
         ]
 
@@ -228,8 +228,8 @@ class Command(BaseCommand):
                 self.stdout.write(f"  ✓ Created volunteer: {user.username} ({user.name})")
             volunteers.append(user)
 
-        seniors = []
-        for data in seniors_data:
+        parents = []
+        for data in parents_data:
             user, created = User.objects.get_or_create(
                 username=data["username"],
                 defaults={**data, "password": "pbkdf2_sha256$test"},
@@ -237,17 +237,17 @@ class Command(BaseCommand):
             if created:
                 user.set_password("testpass123")
                 user.save()
-                self.stdout.write(f"  ✓ Created senior: {user.username} ({user.name})")
-            seniors.append(user)
+                self.stdout.write(f"  ✓ Created parent: {user.username} ({user.name})")
+            parents.append(user)
 
-        return volunteers, seniors
+        return volunteers, parents
 
-    def create_tasks(self, volunteers, seniors, categories):
+    def create_tasks(self, volunteers, parents, categories):
         """Create seed tasks."""
         self.stdout.write("\nCreating tasks...")
 
-        if not seniors:
-            self.stdout.write(self.style.WARNING("  ⚠ No seniors found, skipping tasks"))
+        if not parents:
+            self.stdout.write(self.style.WARNING("  ⚠ No parents found, skipping tasks"))
             return []
 
         task_templates = [
@@ -318,7 +318,7 @@ class Command(BaseCommand):
         colors = ["#0099ff", "#ff6b6b", "#4ecdc4", "#45b7d1", "#f9ca24", "#6c5ce7"]
 
         for i, template in enumerate(task_templates):
-            senior = choice(seniors)
+            parent = choice(parents)
             category = choice(categories)
             days_offset = randint(-30, 30)
             start_time = now + timedelta(days=days_offset, hours=randint(9, 17))
@@ -327,7 +327,7 @@ class Command(BaseCommand):
             volunteer = choice(volunteers) if status == Task.CLAIMED and volunteers else None
 
             task = Task.objects.create(
-                user=senior,
+                user=parent,
                 volunteer=volunteer,
                 category=category,
                 title=template["title"],
@@ -426,11 +426,11 @@ class Command(BaseCommand):
 
         return availabilities
 
-    def create_reviews(self, tasks, seniors, volunteers):
+    def create_reviews(self, tasks, parents, volunteers):
         """Create seed reviews."""
         self.stdout.write("\nCreating reviews...")
 
-        if not tasks or not seniors or not volunteers:
+        if not tasks or not parents or not volunteers:
             self.stdout.write(
                 self.style.WARNING("  ⚠ Missing required data, skipping reviews")
             )
@@ -452,19 +452,19 @@ class Command(BaseCommand):
 
         for task in sample(claimed_tasks, min(3, len(claimed_tasks))):
             if not hasattr(task, "review"):
-                senior = task.user
+                parent = task.user
                 volunteer = task.volunteer
 
                 review = Review.objects.create(
                     task=task,
-                    senior=senior,
+                    parent=parent,
                     volunteer=volunteer,
                     rating=randint(4, 5),
                     comment=choice(review_comments),
                 )
                 reviews.append(review)
                 self.stdout.write(
-                    f"  ✓ Created review: {senior.username} -> {volunteer.username} ({review.rating} stars)"
+                    f"  ✓ Created review: {parent.username} -> {volunteer.username} ({review.rating} stars)"
                 )
 
         return reviews
@@ -507,7 +507,7 @@ class Command(BaseCommand):
             {
                 "type": "message",
                 "title": "New Message",
-                "message": "You have a new message from a senior citizen.",
+                "message": "You have a new message from a parent citizen.",
             },
         ]
 

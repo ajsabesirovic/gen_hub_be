@@ -35,8 +35,11 @@ from users.views import (
     CustomLoginView,
     CustomUserDetailsView,
     CookieTokenRefreshView,
+    MeProfileView,
 )
 from users.verify_email import VerifyEmailCodeView
+from django.conf.urls.static import static
+from django.conf import settings
 
 def root_view(request):
     """Root API endpoint"""
@@ -56,6 +59,7 @@ def root_view(request):
     })
 
 api_paths = [
+    path('me/profile/', MeProfileView.as_view(), name='me-profile'),
     path('users/', include('users.urls')),
     path('', include('tasks.urls')),
     path('', include('availability.urls')),
@@ -63,6 +67,7 @@ api_paths = [
     path('', include('reviews.urls')),
     path('', include('notifications.urls')),
     path('', include('categories.urls')),
+    path('stats/', include('stats.urls')),
 ]
 
 auth_patterns = [
@@ -99,3 +104,7 @@ urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
