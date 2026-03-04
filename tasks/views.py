@@ -88,34 +88,25 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             services.delete_task(task=instance, user=self.request.user)
 
-    @action(detail=False, methods=["get"], url_path="available")
+    @action(detail=False, methods=["get"], url_path="available", pagination_class=None)
     def available(self, request):
         queryset = services.get_available_tasks(request.user, request.query_params)
-        page = self.paginate_queryset(queryset)
-        serializer = TaskSerializer(page or queryset, many=True, context={"request": request})
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
+        serializer = TaskSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
 
-    @action(detail=False, methods=["get"], url_path="parent/me")
+    @action(detail=False, methods=["get"], url_path="parent/me", pagination_class=None)
     def parent_me(self, request):
         segment = request.query_params.get("segment")
         queryset = services.tasks_for_parent(request.user, segment)
-        page = self.paginate_queryset(queryset)
-        serializer = TaskSerializer(page or queryset, many=True, context={"request": request})
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
+        serializer = TaskSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
-    @action(detail=False, methods=["get"], url_path="volunteer/me")
+    @action(detail=False, methods=["get"], url_path="volunteer/me", pagination_class=None)
     def volunteer_me(self, request):
         segment = request.query_params.get("segment")
         queryset = services.tasks_for_volunteer(request.user, segment)
-        page = self.paginate_queryset(queryset)
-        serializer = TaskSerializer(page or queryset, many=True, context={"request": request})
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
+        serializer = TaskSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     @extend_schema(
